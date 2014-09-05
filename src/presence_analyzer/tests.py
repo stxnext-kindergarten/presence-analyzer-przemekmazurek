@@ -70,6 +70,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             [u'Fri', 0],
             [u'Sat', 0],
             [u'Sun', 0]])
+
+    def test_mean_time_weekday_non_existing_id(self):
+        """
+        Test mean time for non-existing ID.
+        """
         resp = self.client.get('/api/v1/mean_time_weekday/1')
         self.assertEqual(resp.status_code, 404)
 
@@ -91,6 +96,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             [u'Fri', 0],
             [u'Sat', 0],
             [u'Sun', 0]])
+
+    def test_presence_weekday_non_existing_id(self):
+        """
+        Tests presence of non-existing ID.
+        """
         resp = self.client.get('/api/v1/presence_weekday/1')
         self.assertEqual(resp.status_code, 404)
 
