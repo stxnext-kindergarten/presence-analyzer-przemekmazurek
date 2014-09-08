@@ -75,7 +75,7 @@ def group_by_weekday(items):
     """
     Groups presence entries by weekday.
     """
-    result = [[], [], [], [], [], [], []]  # one list for every day in week
+    result = [[] for x in range(0, 7)]
     for date in items:
         start = items[date]['start']
         end = items[date]['end']
@@ -108,7 +108,7 @@ def group_by_weekday_start_end(items):
     """
     Groups presence srart/end by weekday.
     """
-    result = [[], [], [], [], [], [], []]  # one list for every day in week
+    result = [[] for x in range(0, 7)]
     for date in items:
         start = items[date]['start']
         end = items[date]['end']
@@ -116,8 +116,11 @@ def group_by_weekday_start_end(items):
     return result
 
 
-def mean_from_list(items, i):
+def mean_from_list(items, column):
     """
     Calculates mean value from list.
     """
-    return mean([seconds_since_midnight(x[i]) for x in items]) if items else 0
+    return mean([
+        seconds_since_midnight(hour[column])
+        for hour in items]) if items else 0
+
