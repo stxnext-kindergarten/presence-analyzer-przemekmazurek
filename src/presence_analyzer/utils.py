@@ -102,3 +102,22 @@ def mean(items):
     Calculates arithmetic mean. Returns zero for empty lists.
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
+
+
+def group_by_weekday_start_end(items):
+    """
+    Groups presence srart/end by weekday.
+    """
+    result = [[], [], [], [], [], [], []]  # one list for every day in week
+    for date in items:
+        start = items[date]['start']
+        end = items[date]['end']
+        result[date.weekday()].append([start, end])
+    return result
+
+
+def mean_from_list(items, i):
+    """
+    Calculates mean value from list.
+    """
+    return mean([seconds_since_midnight(x[i]) for x in items]) if items else 0
