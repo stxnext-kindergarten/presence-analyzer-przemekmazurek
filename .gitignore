@@ -1,0 +1,5 @@
+*.pyc
+*.un~
+develop-eggs/
+eggs/
+bin/
