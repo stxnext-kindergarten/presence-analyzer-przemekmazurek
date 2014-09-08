@@ -120,7 +120,9 @@ def mean_from_list(items, column):
     """
     Calculates mean value from list.
     """
-    return mean([
+    if not items:
+        return 0
+    result = mean([
         seconds_since_midnight(hour[column])
-        for hour in items]) if items else 0
-
+        for hour in items])
+    return result

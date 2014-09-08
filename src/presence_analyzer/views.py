@@ -85,11 +85,12 @@ def mean_start_end_view(user_id):
         log.debug('User %s not found!', user_id)
         abort(404)
     weekdays = utils.group_by_weekday_start_end(data[user_id])
-    result = [(
-        calendar.day_abbr[weekday],
-        utils.mean_from_list(hours, 0),
-        utils.mean_from_list(hours, 1)
+    result = [
+        (
+            calendar.day_abbr[weekday],
+            utils.mean_from_list(hours, 0),
+            utils.mean_from_list(hours, 1),
         )
         for weekday, hours in enumerate(weekdays)
-        ]
+    ]
     return result
