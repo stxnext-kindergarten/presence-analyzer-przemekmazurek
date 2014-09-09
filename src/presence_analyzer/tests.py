@@ -104,6 +104,29 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/api/v1/presence_weekday/1')
         self.assertEqual(resp.status_code, 404)
 
+    def test_api_presence_start_end(self):
+        """
+        Test if start/end presence of a given user is correctly computed.
+        """
+        resp = self.client.get('/api/v1/mean_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 7)
+        self.assertEquals(data, [
+            [u'Mon', 0, 0],
+            [u'Tue', 34745.0, 64792.0],
+            [u'Wed', 33592.0, 58057.0],
+            [u'Thu', 38926.0, 62631.0],
+            [u'Fri', 0, 0], [u'Sat', 0, 0],
+            [u'Sun', 0, 0]])
+
+    def test_presence_start_end_non_existing_id(self):
+        """
+        Test if start/end presence of a given user is correctly computed.
+        """
+        resp = self.client.get('/api/v1/mean_start_end/1')
+        self.assertEqual(resp.status_code, 404)
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
