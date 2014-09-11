@@ -8,10 +8,15 @@ import datetime
 import unittest
 
 from presence_analyzer import main, views, utils
+from lxml import etree
 
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
+)
+
+TEST_DATA_XML = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.xml'
 )
 
 
@@ -26,6 +31,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({'DATA_XML': TEST_DATA_XML})
         self.client = main.app.test_client()
 
     def tearDown(self):
@@ -51,7 +57,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
         self.assertEqual(len(data), 2)
-        self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
+        self.assertDictEqual(data[0], {
+            u'user_id': 176,
+            u'name': u'Adrian K.',
+            u'avatar': 'https://intranet.stxnext.pl:443/api/images/users/176',
+        })
 
     def test_api_mean_time_weekday(self):
         """
@@ -128,6 +138,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/api/v1/mean_start_end/1')
         self.assertEqual(resp.status_code, 404)
 
+
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
     Utility functions tests.
@@ -138,6 +149,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({'DATA_XML': TEST_DATA_XML})
 
     def tearDown(self):
         """
@@ -192,6 +204,41 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         data = utils.get_data()
         li = [[], [30047], [24465], [23705], [], [], []]
         self.assertEqual(utils.group_by_weekday(data[10]), li)
+
+    def test_data_from_xml(self):
+        """
+        Test addidional_data function.
+        """
+        data = utils.data_from_xml()
+        self.assertIsInstance(data, list)
+        self.assertIsInstance(data[1], dict)
+        self.assertIsInstance(data[1]['user_id'], int)
+        self.assertIsInstance(data[1]['name'], str)
+        self.assertIsInstance(data[1]['avatar'], str)
+        self.assertItemsEqual(data[1].keys(), ['user_id', 'name', 'avatar'])
+        expected = {
+            'user_id': 176,
+            'name': 'Adrian K.',
+            'avatar': 'https://intranet.stxnext.pl:443/api/images/users/176',
+        }
+        expected_2 = {
+            'user_id': 170,
+            'name': 'Agata J.',
+            'avatar': 'https://intranet.stxnext.pl:443/api/images/users/170',
+        }
+        self.assertDictEqual(utils.data_from_xml()[0], expected)
+        self.assertDictEqual(utils.data_from_xml()[1], expected_2)
+
+    def test_get_url(self):
+        """
+        Test get url function.
+        """
+        with open(TEST_DATA_XML, 'r') as xmlfile:
+            xml = etree.parse(xmlfile)
+        server = xml.getroot().find('server')
+        data = utils.get_url(server)
+        expected = 'https://intranet.stxnext.pl:443'
+        self.assertEqual(expected, data)
 
 
 def suite():
