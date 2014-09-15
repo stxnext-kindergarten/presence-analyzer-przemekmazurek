@@ -39,22 +39,52 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         """
         pass
 
-    def test_mainpage(self):
+    def get_response_data(self, link):
         """
-        Test main page redirect.
+        Gets data from http response.
+        """
+        resp = self.client.get(link)
+        data = json.loads(resp.data)
+        return data
+
+    def test_http_responses(self):
+        """
+        Tests http responses.
         """
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 302)
         assert resp.headers['Location'].endswith('/presence_weekday.html')
 
+        resp = self.client.get('/api/v1/users')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+
+        resp = self.client.get('/api/v1/mean_time_weekday/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+
+        resp = self.client.get('/api/v1/mean_time_weekday/1')
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.get('/api/v1/presence_weekday/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+
+        resp = self.client.get('/api/v1/presence_weekday/1')
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.get('/api/v1/mean_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+
+        resp = self.client.get('/api/v1/mean_start_end/1')
+        self.assertEqual(resp.status_code, 404)
+
     def test_api_users(self):
         """
         Test users listing.
         """
-        resp = self.client.get('/api/v1/users')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
-        data = json.loads(resp.data)
+        data = self.get_response_data('/api/v1/users')
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {
             u'user_id': 176,
@@ -66,10 +96,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         """
         Test mean weekday for given user.
         """
-        resp = self.client.get('/api/v1/mean_time_weekday/10')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
-        data = json.loads(resp.data)
+        data = self.get_response_data('/api/v1/mean_time_weekday/10')
         self.assertEqual(len(data), 7)
         self.assertEquals(data, [
             [u'Mon', 0],
@@ -80,21 +107,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             [u'Sat', 0],
             [u'Sun', 0]])
 
-    def test_mean_time_weekday_non_existing_id(self):
-        """
-        Test mean time for non-existing ID.
-        """
-        resp = self.client.get('/api/v1/mean_time_weekday/1')
-        self.assertEqual(resp.status_code, 404)
-
     def test_api_presence_weekday(self):
         """
         Test if total presence of a given user is correctly computed.
         """
-        resp = self.client.get('/api/v1/presence_weekday/10')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
-        data = json.loads(resp.data)
+        data = self.get_response_data('/api/v1/presence_weekday/10')
         self.assertEqual(len(data), 8)
         self.assertEquals(data, [
             [u'Weekday', u'Presence (s)'],
@@ -106,21 +123,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             [u'Sat', 0],
             [u'Sun', 0]])
 
-    def test_presence_weekday_non_existing_id(self):
-        """
-        Tests presence of non-existing ID.
-        """
-        resp = self.client.get('/api/v1/presence_weekday/1')
-        self.assertEqual(resp.status_code, 404)
-
     def test_api_presence_start_end(self):
         """
         Test if start/end presence of a given user is correctly computed.
         """
-        resp = self.client.get('/api/v1/mean_start_end/10')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
-        data = json.loads(resp.data)
+        data = self.get_response_data('/api/v1/mean_start_end/10')
         self.assertEqual(len(data), 7)
         self.assertEquals(data, [
             [u'Mon', 0, 0],
@@ -129,13 +136,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             [u'Thu', 38926.0, 62631.0],
             [u'Fri', 0, 0], [u'Sat', 0, 0],
             [u'Sun', 0, 0]])
-
-    def test_presence_start_end_non_existing_id(self):
-        """
-        Test if start/end presence of a given user is correctly computed.
-        """
-        resp = self.client.get('/api/v1/mean_start_end/1')
-        self.assertEqual(resp.status_code, 404)
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
