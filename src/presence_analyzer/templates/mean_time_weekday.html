@@ -17,7 +17,7 @@
                 $.getJSON("{{ url_for('users_view') }}", function(result) {
                     var dropdown = $("#user_id");
                     $.each(result, function(item) {
-                        dropdown.append($("<option />").val(this.user_id).text(this.name));
+                        dropdown.append($("<option />").val(this.user_id).text(this.name).attr('data-url', this.avatar));
                     });
                     dropdown.show();
                     loading.hide();
@@ -26,11 +26,11 @@
                     var selected_user = $("#user_id").val();
                     var chart_div = $('#chart_div');
                     var avatar_div = $('#avatar');
-                    var url = "https://intranet.stxnext.pl/api/images/users/"
+                    var url = $('#user_id option:selected').data('url')
                     if(selected_user) {
                         loading.show();
                         chart_div.hide();
-                        avatar_div.html('<img src="' + url + selected_user + '" height="100" width="100"/>');
+                        avatar_div.html('<img src="' + url + '" height="100" width="100"/>');
                         $.getJSON("{{ url_for('mean_time_weekday_view') }}"+selected_user, function(result) {
                             $.each(result, function(index, value) {
                                 value[1] = parseInterval(value[1]);

@@ -8,7 +8,6 @@ import datetime
 import unittest
 
 from presence_analyzer import main, views, utils
-from lxml import etree
 
 
 TEST_DATA_CSV = os.path.join(
@@ -221,24 +220,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             'name': 'Adrian K.',
             'avatar': 'https://intranet.stxnext.pl:443/api/images/users/176',
         }
-        expected_2 = {
-            'user_id': 170,
-            'name': 'Agata J.',
-            'avatar': 'https://intranet.stxnext.pl:443/api/images/users/170',
-        }
         self.assertDictEqual(utils.data_from_xml()[0], expected)
-        self.assertDictEqual(utils.data_from_xml()[1], expected_2)
-
-    def test_get_url(self):
-        """
-        Test get url function.
-        """
-        with open(TEST_DATA_XML, 'r') as xmlfile:
-            xml = etree.parse(xmlfile)
-        server = xml.getroot().find('server')
-        data = utils.get_url(server)
-        expected = 'https://intranet.stxnext.pl:443'
-        self.assertEqual(expected, data)
 
 
 def suite():
