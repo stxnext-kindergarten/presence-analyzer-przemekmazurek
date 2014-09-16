@@ -128,6 +128,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/api/v1/mean_start_end/1')
         self.assertEqual(resp.status_code, 404)
 
+
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
     Utility functions tests.
@@ -192,6 +193,29 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         data = utils.get_data()
         li = [[], [30047], [24465], [23705], [], [], []]
         self.assertEqual(utils.group_by_weekday(data[10]), li)
+
+    def test_cache(self):
+        """
+        Tests cache functionality.
+        """
+        decorator = utils.cache(utils.get_data())
+        data = decorator.func_globals['cached_data']
+        result = [v for k, v in data.items()]
+        expected = {
+            datetime.date(2013, 9, 10): {
+                'end': datetime.time(17, 59, 52),
+                'start': datetime.time(9, 39, 5)
+                },
+            datetime.date(2013, 9, 11): {
+                'end': datetime.time(16, 7, 37),
+                'start': datetime.time(9, 19, 52)
+                },
+            datetime.date(2013, 9, 12): {
+                'end': datetime.time(17, 23, 51),
+                'start': datetime.time(10, 48, 46)
+                },
+            }
+        self.assertEqual(expected, result[0][10])
 
 
 def suite():
