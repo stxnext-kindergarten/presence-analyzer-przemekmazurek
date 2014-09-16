@@ -16,8 +16,10 @@ from presence_analyzer.main import app
 import logging
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
+cached_data = {}
 
-def cache(timeout):
+
+def cache(timeout=600):
     """
     Cashes data.
     """
@@ -28,19 +30,21 @@ def cache(timeout):
         """
         time_stamp = {}
         lock = Lock()
-        cached_data = {}
 
         def inner(*args, **kwargs):
             """
             Inner decorator function.
             """
-            key = hash(function.__name__+repr(args))
+            key = hash(function.__name__+repr(args)+repr(kwargs))
             current_time = time.time()
+
+            def time_diff():
+                if current_time - time_stamp[key] >= timeout:
+                    return True
+                else:
+                    return False
             with lock:
-                if (
-                    key not in cached_data
-                    or current_time - time_stamp[key] >= timeout
-                ):
+                if key not in cached_data or time_diff():
                     time_stamp[key] = current_time
                     cached_data[key] = function(*args, **kwargs)
             return cached_data[key]
