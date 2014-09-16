@@ -5,15 +5,17 @@ Helper functions used in views.
 
 import csv
 import time
-from threading import Lock
-from json import dumps
-from functools import wraps
+import logging
 from datetime import datetime
+from functools import wraps
+from json import dumps
+from threading import Lock
+
 from flask import Response
+from lxml import etree
 
 from presence_analyzer.main import app
 
-import logging
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 cached_data = {}
@@ -163,3 +165,34 @@ def mean_from_list(items, column):
         seconds_since_midnight(hour[column])
         for hour in items])
     return result
+
+
+def data_from_xml():
+    """
+    Gets data from xml file.
+    """
+    filename = app.config['DATA_XML']
+    with open(filename, 'r') as xmlfile:
+        xml = etree.parse(xmlfile)
+    server = xml.getroot().find('server')
+    users = xml.getroot().find('users')
+    return [
+        {
+            'user_id': int(user.get('id')),
+            'name': user.find('name').text,
+            'avatar': get_url(server) + user.find('avatar').text,
+        }
+        for user in users
+    ]
+
+
+def get_url(server):
+    """
+    Gets url from XML file.
+    """
+    server_url = '{0}://{1}:{2}'.format(
+        server.find('protocol').text,
+        server.find('host').text,
+        server.find('port').text,
+    )
+    return server_url

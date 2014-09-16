@@ -4,6 +4,7 @@
 
 import os
 import sys
+import urllib2
 from functools import partial
 
 import paste.script.command
@@ -111,3 +112,16 @@ def run():
         _serve('stop', dry_run=dry_run)
 
     werkzeug.script.run()
+
+
+def get_xml_from_http():
+    """
+    Gets users XML file.
+    """
+    app = make_app(config=DEPLOY_CFG)
+    xml_url = app.config['XML_URL']
+    xml_path = app.config['DATA_XML']
+    data = urllib2.urlopen(xml_url)
+
+    with open(xml_path, 'w') as filename:
+        filename.write(data.read())
